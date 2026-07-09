@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+:root {
+  /* Light mode colors */
+  --bg: #f5f0e8;
+  --surface: #ffffff;
+  --topbar-bg: rgba(245, 240, 232, 0.96);
+  --text-primary: #1a2744;
+  --text-secondary: #8a7d65;
+  --text-secondary-darker: #6b5f4a;
+  --border: #e0d9cc;
+
+  /* Brand / Utility colors (constant across modes) */
+  --primary: #1a2744;
+  --primary-dark: #111c33;
+  --secondary: #2e4070;
+  
+  --accent: #c9a84c;
+  --accent-dark: #b59540;
+  
+  --sidebar: #1a2744;
+  --sidebar-hover: #243460;
+  
+  --success: #1e6b3c;
+  --success-dark: #155230;
+  --warning: #b07d2a;
+  --danger: #8b1a1a;
+  --danger-dark: #6e1313;
+  
+  --medal-gold: #c9a84c;
+  --medal-silver: #8a9ab5;
+  --medal-bronze: #8b5e3c;
+}
+
+:root.dark {
+  /* Dark mode colors */
+  --bg: #070b13;
+  --surface: #0b101f;
+  --topbar-bg: rgba(7, 11, 19, 0.96);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-secondary-darker: #64748b;
+  --border: #1e293b;
+}
+
+@theme {
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-serif: var(--font-heading), Georgia, serif;
+  
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-topbar-bg: var(--topbar-bg);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border: var(--border);
+
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary: var(--secondary);
+  
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-hover: var(--sidebar-hover);
+  
+  --color-success: var(--success);
+  --color-success-dark: var(--success-dark);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-danger-dark: var(--danger-dark);
+  
+  --color-medal-gold: var(--medal-gold);
+  --color-medal-silver: var(--medal-silver);
+  --color-medal-bronze: var(--medal-bronze);
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  --shadow-card: 0 4px 20px rgba(15, 23, 42, 0.05);
+  --shadow-card-hover: 0 8px 30px rgba(15, 23, 42, 0.1);
+  --shadow-modal: 0 20px 60px rgba(15, 23, 42, 0.15);
+  --shadow-btn: 0 2px 8px rgba(26, 39, 68, 0.18);
+  --shadow-glow: 0 0 20px rgba(201, 168, 124, 0.3);
+}
+
+/* Base resets & styles mapped to variables */
+html, body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+h1, h2, h3, h4, h5, h6, .heading-serif {
+  font-family: var(--font-serif);
+}
+
+/* Glassmorphism custom helpers */
+.glass {
+  background-color: var(--topbar-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Responsive custom spacing container */
+.container-custom {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  max-width: 80rem; /* 1280px */
+}
+
+@media (min-width: 640px) {
+  .container-custom {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-custom {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
