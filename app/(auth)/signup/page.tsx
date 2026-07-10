@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { RegisterSchema } from "@/lib/validation/schemas";
-import { AlertCircle, ArrowRight, CheckCircle2, User, Building, Mail, Lock, FileText, ClipboardList } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, User, Building, Mail, Lock, FileText, ClipboardList, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"candidate" | "company">("candidate");
+  const [role, setRole] = useState<"candidate" | "company" | "admin">("candidate");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,7 +32,7 @@ export default function SignupPage() {
     },
   });
 
-  const handleRoleToggle = (selectedRole: "candidate" | "company") => {
+  const handleRoleToggle = (selectedRole: "candidate" | "company" | "admin") => {
     setRole(selectedRole);
     setError("");
     reset(); // Clear inputs on switch
@@ -74,8 +74,10 @@ export default function SignupPage() {
       setTimeout(() => {
         if (role === "candidate") {
           router.push("/candidate/dashboard");
-        } else {
+        } else if (role === "company") {
           router.push("/company/dashboard");
+        } else if (role === "admin") {
+          router.push("/admin/dashboard");
         }
       }, 1000);
     } catch (err: any) {
@@ -106,30 +108,42 @@ export default function SignupPage() {
 
           <div className="bg-surface border border-border shadow-card rounded-2xl p-8 sm:p-10 space-y-6">
             {/* Role selection tab */}
-            <div className="grid grid-cols-2 gap-2.5 p-1 bg-background rounded-lg border border-border">
+            <div className="grid grid-cols-3 gap-2 p-1 bg-background rounded-lg border border-border">
               <button
                 type="button"
                 onClick={() => handleRoleToggle("candidate")}
-                className={`flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
                   role === "candidate"
                     ? "bg-surface text-text-primary shadow-sm"
                     : "text-text-secondary hover:text-text-primary"
                 }`}
               >
-                <User size={14} />
+                <User size={13} />
                 <span>Candidate</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleRoleToggle("company")}
-                className={`flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
                   role === "company"
                     ? "bg-surface text-text-primary shadow-sm"
                     : "text-text-secondary hover:text-text-primary"
                 }`}
               >
-                <Building size={14} />
+                <Building size={13} />
                 <span>Company</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRoleToggle("admin")}
+                className={`flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                  role === "admin"
+                    ? "bg-surface text-red-500 font-bold shadow-sm"
+                    : "text-text-secondary hover:text-text-primary"
+                }`}
+              >
+                <ShieldCheck size={13} />
+                <span>Admin</span>
               </button>
             </div>
 
@@ -225,7 +239,7 @@ export default function SignupPage() {
                 )}
               </div>
 
-              {role === "candidate" ? (
+              {role === "candidate" && (
                 <>
                   <div>
                     <label
@@ -269,7 +283,9 @@ export default function SignupPage() {
                     </div>
                   </div>
                 </>
-              ) : (
+              )}
+
+              {role === "company" && (
                 <>
                   <div>
                     <label
