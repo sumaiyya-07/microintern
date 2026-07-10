@@ -22,7 +22,142 @@ The platform implements three separate user portals guarded by a custom JWT-cook
 - **Security**: Custom JWT Session in httpOnly secure cookie + `bcryptjs` password hashing
 - **Styling**: Tailwind CSS v4 (mapped using `@theme` color tokens, border radii, shadows)
 - **Validation**: `react-hook-form` + `zod` schema validations on client and server routes
-- **AI Integration**: x.ai (Grok-2) API integration for generating candidate work feedback with automatic mock engine degradation fallback
+- **AI Integration**: x.ai (Grok-2) / Groq API integration for generating candidate work feedback with automatic mock engine degradation fallback
+
+### 🏗️ Architecture Diagram
+
+![System Architecture Diagram](/public/images/architecture.png)
+
+<details>
+<summary>Show Mermaid Code Source</summary>
+
+```mermaid
+graph TD
+    Client[Browser Client]
+    
+    subgraph "Next.js App Layer"
+        Proxy["Proxy or Middleware - JWT Auth and Route Guard"]
+        
+        subgraph "User Portals"
+            CandidatePortal["Candidate Portal - candidate"]
+            CompanyPortal["Company Portal - company"]
+            AdminPortal["Admin Portal - admin"]
+        end
+        
+        subgraph "API Route Handlers"
+            AuthAPI["Auth API - api auth"]
+            TaskAPI["Task API - api tasks"]
+            AppAPI["Application API - api applications"]
+            ReviewAPI["Review API - api reviews"]
+            AIAPI["AI API - api ai"]
+        end
+    end
+
+    subgraph "External Integrations"
+        SMTP["Nodemailer SMTP"]
+        LLM["Groq or Grok LLM API"]
+    end
+
+    subgraph "Data Storage"
+        DBConnect["dbConnect Singleton"]
+        MongoDB["MongoDB Database"]
+    end
+
+    Client -->|HTTP Request| Proxy
+    
+    Proxy -->|Role-Based Access| CandidatePortal
+    Proxy -->|Role-Based Access| CompanyPortal
+    Proxy -->|Role-Based Access| AdminPortal
+
+    CandidatePortal -.->|Fetch Data| TaskAPI
+    CandidatePortal -.->|Fetch Data| AppAPI
+    CompanyPortal -.->|Fetch Data| TaskAPI
+    CompanyPortal -.->|Fetch Data| AppAPI
+    CompanyPortal -.->|Fetch Data| ReviewAPI
+    AdminPortal -.->|Fetch Data| TaskAPI
+    
+    TaskAPI --> DBConnect
+    AppAPI --> DBConnect
+    ReviewAPI --> DBConnect
+    AuthAPI --> DBConnect
+    
+    TaskAPI -.->|after trigger| SMTP
+    ReviewAPI -.->|Notification| SMTP
+    ReviewAPI -.->|Request Review| LLM
+    AIAPI -.->|Request Feedback| LLM
+    
+    DBConnect --> MongoDB
+```
+
+</details>
+
+### 📊 Entity-Relationship (ER) Diagram
+
+![Entity-Relationship Diagram](/public/images/er-diagram.png)
+
+<details>
+<summary>Show Mermaid Code Source</summary>
+
+```mermaid
+erDiagram
+    User ||--o{ Task : "creates"
+    User ||--o{ Application : "applies"
+    Task ||--o{ Application : "has"
+    Application ||--|| Submission : "contains"
+    Submission ||--o{ Review : "receives"
+
+    User {
+        ObjectId id PK
+        string name
+        string email
+        string password
+        string role
+        string bio
+        string[] skills
+        string companyName
+        string companyDescription
+        boolean isActive
+    }
+
+    Task {
+        ObjectId id PK
+        ObjectId companyId FK
+        string title
+        string description
+        string category
+        date deadline
+        string rewardText
+        string status
+        boolean isActive
+    }
+
+    Application {
+        ObjectId id PK
+        ObjectId taskId FK
+        ObjectId candidateId FK
+        string status
+        date appliedAt
+    }
+
+    Submission {
+        ObjectId id PK
+        ObjectId applicationId FK
+        string textAnswer
+        string link
+        string fileUrl
+        date submittedAt
+    }
+
+    Review {
+        ObjectId id PK
+        ObjectId submissionId FK
+        string comment
+        int rating
+        boolean isAiGenerated
+    }
+```
+
+</details>
 
 ---
 
