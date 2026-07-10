@@ -180,6 +180,13 @@ function AdminLoginForm() {
             </button>
           </form>
 
+          {/* Seed account credentials help */}
+          <div className="rounded-lg border border-slate-800 bg-[#0f172a] p-3 text-center text-[10px] text-slate-400 space-y-0.5">
+            <span className="font-semibold text-slate-300">Default Administrator Credentials:</span>
+            <div>Email: <code className="text-red-400">admin@microintern.com</code></div>
+            <div>Password: <code className="text-red-400">adminpassword123</code></div>
+          </div>
+
           <div className="text-center pt-2 space-y-2.5 flex flex-col items-center">
             <Link
               href="/admin/signup"
