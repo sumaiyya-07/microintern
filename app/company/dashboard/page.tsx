@@ -5,6 +5,7 @@ import Task from "@/lib/models/Task";
 import Application from "@/lib/models/Application";
 import { Calendar, CirclePlus, ClipboardList, Clock, Eye, Briefcase, UserCheck } from "lucide-react";
 import { STATUS_COLOR_MAP } from "@/lib/constants/statusColors";
+import DashboardTaskList from "./DashboardTaskList";
 
 export const dynamic = "force-dynamic";
 
@@ -43,8 +44,15 @@ export default async function CompanyDashboard() {
       (app) => app.taskId.toString() === task._id.toString()
     );
     return {
-      ...task.toObject(),
       _id: task._id.toString(),
+      companyId: task.companyId.toString(),
+      title: task.title,
+      description: task.description,
+      category: task.category,
+      deadline: task.deadline.toISOString(),
+      rewardText: task.rewardText || "",
+      status: task.status,
+      isActive: task.isActive,
       applicantCount: taskApps.length,
       isExpired: new Date(task.deadline) < new Date(),
     };
@@ -137,77 +145,7 @@ export default async function CompanyDashboard() {
             </div>
           </div>
         ) : (
-          /* Grid of Tasks */
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {tasksWithMetadata.map((task) => (
-              <div
-                key={task._id}
-                className="bg-surface border border-border rounded-xl shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between overflow-hidden"
-              >
-                {/* Card Top */}
-                <div className="p-6 space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="inline-block text-[10px] font-bold tracking-wider uppercase text-accent bg-accent/10 px-2.5 py-0.5 rounded-full border border-accent/25">
-                      {task.category}
-                    </span>
-                    <span
-                      className={`inline-block text-[10px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full border ${
-                        task.isActive && !task.isExpired
-                          ? "text-success border-success/30 bg-success/5"
-                          : "text-text-secondary border-border bg-background"
-                      }`}
-                    >
-                      {!task.isActive
-                        ? "Deactivated"
-                        : task.isExpired
-                        ? "Expired"
-                        : task.status === "open"
-                        ? "Open"
-                        : "Closed"}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="font-serif text-xl font-bold text-text-primary hover:text-accent-dark transition-colors line-clamp-1">
-                      <Link href={`/company/tasks/${task._id}`}>{task.title}</Link>
-                    </h3>
-                    <p className="text-xs text-text-secondary mt-1.5 line-clamp-2">
-                      {task.description}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Card Bottom Meta */}
-                <div className="border-t border-border bg-background px-6 py-4 flex items-center justify-between text-xs text-text-secondary">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-1" title="Deadline">
-                      <Clock size={14} />
-                      <span>
-                        {new Date(task.deadline).toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-1" title="Applicants count">
-                      <UserCheck size={14} />
-                      <span className="font-semibold text-text-primary">
-                        {task.applicantCount} {task.applicantCount === 1 ? "applicant" : "applicants"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Link
-                    href={`/company/tasks/${task._id}`}
-                    className="flex items-center space-x-1 text-xs font-semibold text-secondary dark:text-blue-400 hover:text-accent-dark transition-colors cursor-pointer"
-                  >
-                    <span>View Candidates</span>
-                    <Eye size={14} />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+          <DashboardTaskList initialTasks={tasksWithMetadata as any} />
         )}
       </div>
     </div>

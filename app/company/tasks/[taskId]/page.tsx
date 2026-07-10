@@ -16,6 +16,7 @@ import {
   User,
   AlertCircle,
   HelpCircle,
+  Trash2,
 } from "lucide-react";
 import { STATUS_COLOR_MAP, ApplicationStatus } from "@/lib/constants/statusColors";
 
@@ -88,6 +89,22 @@ export default function CompanyTaskDetailPage({
   const [isEditingReview, setIsEditingReview] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState("");
+
+  // Confirmation dialog states
+  const [confirmStatusModal, setConfirmStatusModal] = useState<{
+    isOpen: boolean;
+    appId: string;
+    newStatus: ApplicationStatus;
+  }>({
+    isOpen: false,
+    appId: "",
+    newStatus: "Applied",
+  });
+
+  // Delete task states
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const fetchData = async () => {
     try {
@@ -186,8 +203,8 @@ export default function CompanyTaskDetailPage({
     }
   };
 
-  // Update applicant status
-  const handleStatusChange = async (appId: string, newStatus: ApplicationStatus) => {
+  // Actual API status updater
+  const executeStatusChange = async (appId: string, newStatus: ApplicationStatus) => {
     // Optimistic UI update
     const previousApps = [...applications];
     setApplications((prev) =>
@@ -217,6 +234,19 @@ export default function CompanyTaskDetailPage({
         setSelectedApp(previousApps.find((a) => a._id === appId) || null);
       }
       alert(err.message || "Failed to update status. Reverted.");
+    }
+  };
+
+  // Update applicant status with interceptor for Offers/Rejections
+  const handleStatusChange = async (appId: string, newStatus: ApplicationStatus) => {
+    if (newStatus === "Offered" || newStatus === "Rejected") {
+      setConfirmStatusModal({
+        isOpen: true,
+        appId,
+        newStatus,
+      });
+    } else {
+      await executeStatusChange(appId, newStatus);
     }
   };
 
@@ -266,6 +296,26 @@ export default function CompanyTaskDetailPage({
       setAiError(err.message || "Failed to generate AI reviews.");
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const handleDeleteTask = async () => {
+    setDeleteLoading(true);
+    setDeleteError("");
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: "DELETE",
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || "Failed to delete task");
+      }
+      // Redirect to dashboard on success
+      router.push("/company/dashboard");
+    } catch (err: any) {
+      console.error(err);
+      setDeleteError(err.message || "Failed to delete task");
+      setDeleteLoading(false);
     }
   };
 
@@ -343,6 +393,13 @@ export default function CompanyTaskDetailPage({
                 ? "Expired"
                 : "Open"}
             </span>
+            <button
+              onClick={() => setIsDeleteConfirmOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-md bg-danger hover:bg-danger-dark text-white font-semibold py-1.5 px-3 text-xs transition-colors shadow-sm cursor-pointer animate-in fade-in"
+            >
+              <Trash2 size={13} />
+              <span>Delete Task</span>
+            </button>
           </div>
         </div>
 
@@ -838,6 +895,150 @@ export default function CompanyTaskDetailPage({
                 className="rounded-md border border-border bg-surface px-4 py-2 text-xs font-semibold text-text-primary hover:bg-background transition-all shadow-sm cursor-pointer"
               >
                 Close View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom themed in-app Confirmation Dialog for Offer / Reject status changes */}
+      {confirmStatusModal.isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div
+            className="bg-surface border border-border shadow-modal rounded-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="border-b border-border bg-background/50 px-6 py-4 flex items-center justify-between">
+              <h3 className="font-serif text-lg font-bold text-text-primary">
+                {confirmStatusModal.newStatus === "Offered" ? "Confirm Candidate Selection" : "Confirm Candidate Rejection"}
+              </h3>
+              <button
+                onClick={() => setConfirmStatusModal({ isOpen: false, appId: "", newStatus: "Applied" })}
+                className="text-text-secondary hover:text-text-primary text-sm font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                  confirmStatusModal.newStatus === "Offered" ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
+                }`}>
+                  <User size={18} />
+                </div>
+                <div>
+                  <p className="font-semibold text-text-primary">
+                    Candidate: {applications.find(a => a._id === confirmStatusModal.appId)?.candidateId?.name || "Candidate"}
+                  </p>
+                  <p className="text-xs text-text-secondary mt-0.5">
+                    Pipeline Stage: {confirmStatusModal.newStatus}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-text-primary leading-relaxed mt-2">
+                {confirmStatusModal.newStatus === "Offered"
+                  ? `Are you sure you want to select this candidate and make them an offer? This will update their pipeline status to Offered and send an email notification.`
+                  : `Are you sure you want to reject this candidate? This will update their pipeline status to Rejected and notify them of the decision.`}
+              </p>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t border-border bg-background/50 px-6 py-4 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setConfirmStatusModal({ isOpen: false, appId: "", newStatus: "Applied" })}
+                className="rounded-md border border-border bg-surface px-4 py-2 text-xs font-semibold text-text-primary hover:bg-background transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  executeStatusChange(confirmStatusModal.appId, confirmStatusModal.newStatus);
+                  setConfirmStatusModal({ isOpen: false, appId: "", newStatus: "Applied" });
+                }}
+                className={`rounded-md px-4 py-2 text-xs font-semibold text-white transition-colors cursor-pointer ${
+                  confirmStatusModal.newStatus === "Offered"
+                    ? "bg-success hover:bg-success-dark"
+                    : "bg-danger hover:bg-danger-dark"
+                }`}
+              >
+                {confirmStatusModal.newStatus === "Offered" ? "Confirm Offer" : "Confirm Reject"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom themed in-app Confirmation Dialog for Task Deletion */}
+      {isDeleteConfirmOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div
+            className="bg-surface border border-border shadow-modal rounded-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="border-b border-border bg-background/50 px-6 py-4 flex items-center justify-between">
+              <h3 className="font-serif text-lg font-bold text-text-primary">
+                Confirm Delete Task
+              </h3>
+              <button
+                onClick={() => {
+                  setIsDeleteConfirmOpen(false);
+                  setDeleteError("");
+                }}
+                disabled={deleteLoading}
+                className="text-text-secondary hover:text-text-primary text-sm font-bold p-1 cursor-pointer disabled:opacity-50"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-danger/10 text-danger flex items-center justify-center shrink-0">
+                  <Trash2 size={18} />
+                </div>
+                <div>
+                  <p className="font-semibold text-text-primary line-clamp-1">
+                    {task.title}
+                  </p>
+                  <p className="text-xs text-text-secondary mt-0.5">
+                    Category: {task.category}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-text-primary leading-relaxed mt-2">
+                Are you sure you want to delete this task? This action is permanent and will delete all submissions and evaluations associated with it.
+              </p>
+              {deleteError && (
+                <p className="text-xs text-danger bg-danger/5 border border-danger/20 rounded p-2.5">
+                  {deleteError}
+                </p>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t border-border bg-background/50 px-6 py-4 flex items-center justify-end gap-3">
+              <button
+                onClick={() => {
+                  setIsDeleteConfirmOpen(false);
+                  setDeleteError("");
+                }}
+                disabled={deleteLoading}
+                className="rounded-md border border-border bg-surface px-4 py-2 text-xs font-semibold text-text-primary hover:bg-background transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteTask}
+                disabled={deleteLoading}
+                className="rounded-md px-4 py-2 text-xs font-semibold text-white bg-danger hover:bg-danger-dark transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {deleteLoading && <Loader2 size={12} className="animate-spin" />}
+                <span>{deleteLoading ? "Deleting..." : "Delete Task"}</span>
               </button>
             </div>
           </div>

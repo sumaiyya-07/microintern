@@ -13,14 +13,20 @@ export async function getGrokFeedback(
   }
 
   try {
-    const response = await fetch("https://api.x.ai/v1/chat/completions", {
+    const isGroq = apiKey.startsWith("gsk_");
+    const endpoint = isGroq
+      ? "https://api.groq.com/openai/v1/chat/completions"
+      : "https://api.x.ai/v1/chat/completions";
+    const model = isGroq ? "llama-3.3-70b-versatile" : "grok-2";
+
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "grok-2",
+        model,
         messages: [
           {
             role: "system",
@@ -37,7 +43,7 @@ export async function getGrokFeedback(
     });
 
     if (!response.ok) {
-      throw new Error(`Grok API error: ${response.status}`);
+      throw new Error(`AI API error: ${response.status}`);
     }
 
     const data = (await response.json()) as any;
