@@ -102,6 +102,16 @@ export default function Navbar({ user: initialUser }: NavbarProps) {
                 >
                   Dashboard
                 </Link>
+                <Link
+                  href="/candidate/profile"
+                  className={`text-sm font-medium transition-colors hover:text-accent-dark ${
+                    isLinkActive("/candidate/profile")
+                      ? "text-accent border-b-2 border-accent pb-1 pt-1"
+                      : "text-text-secondary"
+                  }`}
+                >
+                  Profile
+                </Link>
               </>
             )}
             {user?.role === "company" && (
@@ -126,20 +136,42 @@ export default function Navbar({ user: initialUser }: NavbarProps) {
                 >
                   Post a Task
                 </Link>
+                <Link
+                  href="/company/profile"
+                  className={`text-sm font-medium transition-colors hover:text-accent-dark ${
+                    isLinkActive("/company/profile")
+                      ? "text-accent border-b-2 border-accent pb-1 pt-1"
+                      : "text-text-secondary"
+                  }`}
+                >
+                  Profile
+                </Link>
               </>
             )}
             {user?.role === "admin" && (
-              <Link
-                href="/admin/dashboard"
-                className={`text-sm font-semibold tracking-wide transition-colors text-danger dark:text-red-400 hover:opacity-85 flex items-center gap-1.5 ${
-                  isLinkActive("/admin/dashboard")
-                    ? "border-b-2 border-danger dark:border-red-400 pb-0.5"
-                    : ""
-                }`}
-              >
-                <ShieldAlert size={16} />
-                Admin Panel
-              </Link>
+              <>
+                <Link
+                  href="/admin/dashboard"
+                  className={`text-sm font-semibold tracking-wide transition-colors text-danger dark:text-red-400 hover:opacity-85 flex items-center gap-1.5 ${
+                    isLinkActive("/admin/dashboard")
+                      ? "border-b-2 border-danger dark:border-red-400 pb-0.5"
+                      : ""
+                  }`}
+                >
+                  <ShieldAlert size={16} />
+                  Admin Panel
+                </Link>
+                <Link
+                  href="/admin/profile"
+                  className={`text-sm font-medium transition-colors hover:text-accent-dark ${
+                    isLinkActive("/admin/profile")
+                      ? "text-accent border-b-2 border-accent pb-1 pt-1"
+                      : "text-text-secondary"
+                  }`}
+                >
+                  Profile
+                </Link>
+              </>
             )}
           </div>
         </div>
@@ -216,6 +248,13 @@ export default function Navbar({ user: initialUser }: NavbarProps) {
               >
                 Dashboard
               </Link>
+              <Link
+                href="/candidate/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-sm font-medium text-text-secondary hover:text-text-primary"
+              >
+                Profile
+              </Link>
             </>
           )}
           {user?.role === "company" && (
@@ -234,16 +273,32 @@ export default function Navbar({ user: initialUser }: NavbarProps) {
               >
                 Post a Task
               </Link>
+              <Link
+                href="/company/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-sm font-medium text-text-secondary hover:text-text-primary"
+              >
+                Profile
+              </Link>
             </>
           )}
           {user?.role === "admin" && (
-            <Link
-              href="/admin/dashboard"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-semibold text-danger dark:text-red-400"
-            >
-              Admin Panel
-            </Link>
+            <>
+              <Link
+                href="/admin/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-sm font-semibold text-danger dark:text-red-400"
+              >
+                Admin Panel
+              </Link>
+              <Link
+                href="/admin/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-sm font-medium text-text-secondary hover:text-text-primary"
+              >
+                Profile
+              </Link>
+            </>
           )}
 
           <div className="border-t border-border pt-3">

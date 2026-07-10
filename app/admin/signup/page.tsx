@@ -200,3 +200,5 @@ export default function AdminSignupPage() {
         </div>
       </div>
     </div>
+  );
+}
