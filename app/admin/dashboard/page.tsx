@@ -39,6 +39,9 @@ export default function AdminDashboardPage() {
   
   // Action state
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  
+  // User filter state
+  const [userRoleFilter, setUserRoleFilter] = useState<"all" | "candidate" | "company">("all");
 
   const fetchData = async () => {
     try {
@@ -113,12 +116,13 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Filter lists based on search query
+  // Filter lists based on search query and role filter
   const filteredUsers = users.filter(
     (u) =>
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.role.toLowerCase().includes(searchQuery.toLowerCase())
+      (userRoleFilter === "all" || u.role === userRoleFilter) &&
+      (u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.role.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const filteredTasks = tasks.filter(
@@ -140,6 +144,73 @@ export default function AdminDashboardPage() {
           <p className="text-sm text-text-secondary">
             Manage system directories, moderate active task postings, and deactivate compromised or invalid accounts.
           </p>
+        </div>
+      </div>
+
+      {/* Metrics Overview Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 animate-in fade-in duration-300">
+        {/* Total Candidates Card */}
+        <div className="bg-surface border border-border rounded-xl p-5 shadow-card hover:shadow-card-hover transition-all flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-text-secondary">Candidates Registered</p>
+            <h3 className="font-serif text-2xl font-bold text-text-primary">
+              {users.filter((u) => u.role === "candidate").length}
+            </h3>
+            <p className="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
+              <span>{users.filter((u) => u.role === "candidate" && u.isActive).length} Active</span>
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-accent/10 text-accent flex items-center justify-center shrink-0">
+            <Users size={18} />
+          </div>
+        </div>
+
+        {/* Total Companies Card */}
+        <div className="bg-surface border border-border rounded-xl p-5 shadow-card hover:shadow-card-hover transition-all flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-text-secondary">Companies Registered</p>
+            <h3 className="font-serif text-2xl font-bold text-text-primary">
+              {users.filter((u) => u.role === "company").length}
+            </h3>
+            <p className="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
+              <span>{users.filter((u) => u.role === "company" && u.isActive).length} Active</span>
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-secondary/10 text-secondary dark:text-blue-400 flex items-center justify-center shrink-0">
+            <Briefcase size={18} />
+          </div>
+        </div>
+
+        {/* Total Tasks Card */}
+        <div className="bg-surface border border-border rounded-xl p-5 shadow-card hover:shadow-card-hover transition-all flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-text-secondary">Task Postings</p>
+            <h3 className="font-serif text-2xl font-bold text-text-primary">
+              {tasks.length}
+            </h3>
+            <p className="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
+              <span>{tasks.filter((t) => t.isActive).length} Active</span>
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-success/10 text-success flex items-center justify-center shrink-0">
+            <Briefcase size={18} />
+          </div>
+        </div>
+
+        {/* System Warnings / Deactivated Users Card */}
+        <div className="bg-surface border border-border rounded-xl p-5 shadow-card hover:shadow-card-hover transition-all flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-text-secondary">Deactivated Accounts</p>
+            <h3 className="font-serif text-2xl font-bold text-text-primary">
+              {users.filter((u) => !u.isActive).length}
+            </h3>
+            <p className="text-[10px] text-danger font-semibold flex items-center gap-0.5 mt-0.5">
+              <span>Requires Attention</span>
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-danger/10 text-danger flex items-center justify-center shrink-0">
+            <Ban size={18} />
+          </div>
         </div>
       </div>
 
@@ -191,6 +262,42 @@ export default function AdminDashboardPage() {
           />
         </div>
       </div>
+
+      {/* Role sub-navigation tabs (Only shown when activeTab is users) */}
+      {activeTab === "users" && (
+        <div className="flex items-center gap-2 border-b border-border pb-1">
+          <button
+            onClick={() => setUserRoleFilter("all")}
+            className={`px-3 py-1.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              userRoleFilter === "all"
+                ? "border-accent text-accent font-bold"
+                : "border-transparent text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            All Accounts ({users.length})
+          </button>
+          <button
+            onClick={() => setUserRoleFilter("candidate")}
+            className={`px-3 py-1.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              userRoleFilter === "candidate"
+                ? "border-accent text-accent font-bold"
+                : "border-transparent text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            Candidates ({users.filter((u) => u.role === "candidate").length})
+          </button>
+          <button
+            onClick={() => setUserRoleFilter("company")}
+            className={`px-3 py-1.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+              userRoleFilter === "company"
+                ? "border-accent text-accent font-bold"
+                : "border-transparent text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            Companies ({users.filter((u) => u.role === "company").length})
+          </button>
+        </div>
+      )}
 
       {/* Main panel listings */}
       {loading ? (
