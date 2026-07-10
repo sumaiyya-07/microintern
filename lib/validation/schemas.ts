@@ -4,7 +4,7 @@ export const RegisterSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters"),
   email: z.string().trim().email("Invalid email address").toLowerCase(),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["candidate", "company"]),
+  role: z.enum(["candidate", "company", "admin"]),
   bio: z.string().trim().optional(),
   skills: z.string().optional(), // We'll input as a comma-separated list and convert
   companyName: z.string().trim().optional(),
